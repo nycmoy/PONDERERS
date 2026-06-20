@@ -1,0 +1,10 @@
+{
+  "name": "PONDERERS",
+  "short_name": "PONDERERS",
+  "description": "A private family home base for schedules, meals, notes, planning, faith, children, drawing, and wishlists.",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f6f7f1",
+  "theme_color": "#2f6b57"
+}
