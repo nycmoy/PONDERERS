@@ -20,6 +20,8 @@
   let state = loadState();
   let currentView = getInitialView();
   let canvasCleanup = null;
+  let unsubscribeHousehold = null;
+  let unsubscribeDrawings = null;
   const ui = {
     selectedThreadId: state.threads[0]?.id || "",
     selectedChildId: state.children[0]?.id || "",
@@ -317,7 +319,55 @@
   }
 
   function saveState() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.warn("Could not save PONDERERS data locally", error);
+      toast("Could not save on this device \u2014 storage may be full.");
+    }
+    pushHouseholdToCloud();
+  }
+
+  function pushHouseholdToCloud() {
+    if (!window.PonderersCloud) return;
+    const { drawings, ...householdData } = state;
+    window.PonderersCloud.saveHousehold(householdData).catch((error) => {
+      console.warn("Could not sync to the cloud", error);
+      toast("Saved on this device, but could not sync \u2014 check your connection.");
+    });
+  }
+
+  function connectCloud() {
+    if (!window.PonderersCloud) return;
+    if (unsubscribeHousehold) unsubscribeHousehold();
+    if (unsubscribeDrawings) unsubscribeDrawings();
+
+    unsubscribeHousehold = window.PonderersCloud.watchHousehold((cloudData) => {
+      if (cloudData) {
+        state = normalizeState({ ...cloudData, drawings: state.drawings });
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+        } catch (error) {
+          console.warn("Could not cache PONDERERS data locally", error);
+        }
+        render();
+      } else {
+        // Nobody has synced this household yet, push what's on this device to start it.
+        pushHouseholdToCloud();
+      }
+    });
+
+    unsubscribeDrawings = window.PonderersCloud.watchDrawings((drawings) => {
+      state.drawings = drawings;
+      render();
+    });
+  }
+
+  function disconnectCloud() {
+    if (unsubscribeHousehold) unsubscribeHousehold();
+    if (unsubscribeDrawings) unsubscribeDrawings();
+    unsubscribeHousehold = null;
+    unsubscribeDrawings = null;
   }
 
   function render() {
@@ -1534,7 +1584,10 @@
     if (action === "clear-drawing") clearDrawing();
     if (action === "undo-drawing") undoDrawing();
     if (action === "save-drawing") saveDrawing();
-    if (action === "delete-drawing") removeById(state.drawings, actionButton.dataset.id, "Drawing deleted.");
+    if (action === "delete-drawing") deleteDrawing(actionButton.dataset.id);
+    if (action === "sign-out") {
+      if (window.PonderersCloud) window.PonderersCloud.signOut();
+    }
   });
 
   document.addEventListener("change", (event) => {
@@ -1556,6 +1609,19 @@
     if (!formName) return;
     event.preventDefault();
     const data = Object.fromEntries(new FormData(form).entries());
+
+    if (formName === "sign-in") {
+      const errorEl = document.getElementById("auth-error");
+      if (errorEl) errorEl.textContent = "";
+      if (!window.PonderersCloud) {
+        if (errorEl) errorEl.textContent = "Cloud sync isn't set up yet \u2014 see SETUP.md.";
+        return;
+      }
+      window.PonderersCloud.signIn(data.email.trim(), data.password).catch(() => {
+        if (errorEl) errorEl.textContent = "That email or password isn't right.";
+      });
+      return;
+    }
 
     if (formName === "event") {
       state.events.push({
@@ -1918,7 +1984,7 @@
   }
 
   function resetData() {
-    if (!confirm("Reset PONDERERS sample data on this device?")) return;
+    if (!confirm("Reset PONDERERS sample data for your whole household? This affects both parent accounts.")) return;
     state = seedState();
     saveState();
     setView("today");
@@ -2034,9 +2100,37 @@
   function saveDrawing() {
     const canvas = document.getElementById("drawing-canvas");
     if (!canvas) return;
-    state.drawings.unshift({ id: uid(), image: canvas.toDataURL("image/png"), createdAt: new Date().toISOString() });
+    if (!window.PonderersCloud) {
+      toast("Cloud sync isn't set up yet \u2014 see SETUP.md.");
+      return;
+    }
+    const image = downscaleCanvas(canvas, 720);
+    window.PonderersCloud.addDrawing(image).catch((error) => {
+      console.warn("Could not save drawing to the cloud", error);
+      toast("Could not save the drawing \u2014 check your connection.");
+    });
     addNote("Saved a drawing.", "Home", "tomorrow", false);
     toast("Drawing saved.");
+  }
+
+  function downscaleCanvas(canvas, maxWidth) {
+    if (canvas.width <= maxWidth) return canvas.toDataURL("image/png");
+    const scale = maxWidth / canvas.width;
+    const scaled = document.createElement("canvas");
+    scaled.width = maxWidth;
+    scaled.height = Math.round(canvas.height * scale);
+    scaled.getContext("2d").drawImage(canvas, 0, 0, scaled.width, scaled.height);
+    return scaled.toDataURL("image/png");
+  }
+
+  function deleteDrawing(id) {
+    if (!window.PonderersCloud) return;
+    window.PonderersCloud.deleteDrawing(id)
+      .then(() => toast("Drawing deleted."))
+      .catch((error) => {
+        console.warn("Could not delete drawing", error);
+        toast("Could not delete \u2014 check your connection.");
+      });
   }
 
   function expirationDate(mode) {
@@ -2174,5 +2268,27 @@
     toastTimer = setTimeout(() => note.remove(), 2600);
   }
 
-  render();
+  function startWhenReady() {
+    if (!window.PonderersCloud) {
+      // firebase.js hasn't finished loading yet (or isn't configured) \u2014 retry shortly.
+      setTimeout(startWhenReady, 50);
+      return;
+    }
+    window.PonderersCloud.onAuth((user) => {
+      const authScreen = document.getElementById("auth-screen");
+      const shell = document.querySelector(".app-shell");
+      if (user) {
+        if (authScreen) authScreen.hidden = true;
+        if (shell) shell.hidden = false;
+        connectCloud();
+        render();
+      } else {
+        disconnectCloud();
+        if (authScreen) authScreen.hidden = false;
+        if (shell) shell.hidden = true;
+      }
+    });
+  }
+
+  startWhenReady();
 })();

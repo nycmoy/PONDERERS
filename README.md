@@ -1,8 +1,10 @@
 # PONDERERS
 
-Open `index.html` in a browser to use the local first build.
+Run a local server (e.g. `npx serve .`) and open the printed address, or deploy to
+Vercel. Opening `index.html` directly by double-clicking it can hit browser
+restrictions on the Firebase module imports.
 
-This version saves data in the browser on the device where it is opened. It includes:
+Sign in with one of the two parent accounts to see:
 
 - Today dashboard
 - Calendar with Apple `.ics` import and export
@@ -14,4 +16,11 @@ This version saves data in the browser on the device where it is opened. It incl
 - Faith, prayer, gratitude, and encouragement
 - Finger drawing board
 
-Next build step: connect real accounts, parent-only cloud sync, and the Apple Calendar path.
+Data syncs in real time between both parent accounts via Firebase
+(Authentication + Firestore), with the browser's local storage used as an instant
+offline-friendly cache. There's no public sign-up screen on purpose — see
+`SETUP.md` to create the two parent accounts and connect your own Firebase
+project before first use.
+
+Next build step: open up beyond just the two parent accounts, if that's ever
+wanted (e.g. grandparents, a babysitter view).

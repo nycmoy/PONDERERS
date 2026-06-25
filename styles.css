@@ -56,6 +56,18 @@ button {
   min-height: 100vh;
 }
 
+.auth-screen {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-panel {
+  width: 100%;
+  max-width: 360px;
+}
+
 .content-shell {
   min-height: 100vh;
   padding-bottom: 86px;

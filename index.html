@@ -9,7 +9,25 @@
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <div class="app-shell">
+    <div id="auth-screen" class="auth-screen">
+      <form class="form-panel auth-panel" data-form="sign-in" autocomplete="on">
+        <div class="brand" style="justify-content: center; margin-bottom: 12px;">
+          <span class="brand-mark" aria-hidden="true">P</span>
+          <h1 style="margin: 0;">PONDERERS</h1>
+        </div>
+        <p style="text-align: center; color: var(--muted); margin: 0 0 16px;">Sign in to your family home base.</p>
+        <label>Email
+          <input type="email" name="email" required autocomplete="email" placeholder="you@email.com">
+        </label>
+        <label style="margin-top: 10px;">Password
+          <input type="password" name="password" required autocomplete="current-password" placeholder="********">
+        </label>
+        <p id="auth-error" role="alert" style="color: #8d342b; font-size: 0.82rem; min-height: 1.2em; margin: 10px 0 0;"></p>
+        <button class="primary-button" type="submit" style="width: 100%; margin-top: 14px;">Sign in</button>
+      </form>
+    </div>
+
+    <div class="app-shell" hidden>
       <aside class="rail" aria-label="Primary">
         <div class="rail-brand">
           <span class="brand-mark" aria-hidden="true">P</span>
@@ -62,6 +80,9 @@
           <button class="icon-button" data-action="export-data" type="button" aria-label="Export family data" title="Export family data">
             <svg viewBox="0 0 24 24"><path d="M12 3v12M8 11l4 4 4-4M5 21h14a1 1 0 0 0 1-1v-3M4 17v3a1 1 0 0 0 1 1"/></svg>
           </button>
+          <button class="icon-button" data-action="sign-out" type="button" aria-label="Sign out" title="Sign out">
+            <svg viewBox="0 0 24 24"><path d="M9 21H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h4M16 17l5-5-5-5M21 12H9"/></svg>
+          </button>
         </header>
 
         <main id="app" class="app" tabindex="-1" aria-live="polite"></main>
@@ -107,6 +128,7 @@
       </div>
     </template>
 
+    <script type="module" src="firebase.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
