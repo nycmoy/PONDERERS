@@ -26,12 +26,12 @@ import {
 // These values are meant to be public in client code; they are not secrets.
 // Real protection comes from the Firestore security rules (firestore.rules), not from hiding this.
 const firebaseConfig = {
-  apiKey: "PASTE_ME",
-  authDomain: "PASTE_ME",
-  projectId: "PASTE_ME",
-  storageBucket: "PASTE_ME",
-  messagingSenderId: "PASTE_ME",
-  appId: "PASTE_ME"
+  apiKey: "AIzaSyDRWIKiF_AcNe33qKQnIHehs3moi3kMuS0",
+  authDomain: "ponderers-4c402.firebaseapp.com",
+  projectId: "ponderers-4c402",
+  storageBucket: "ponderers-4c402.firebasestorage.app",
+  messagingSenderId: "1019066475396",
+  appId: "1:1019066475396:web:b456dc5955e839cf90f3d1"
 };
 
 if (firebaseConfig.apiKey === "PASTE_ME") {
