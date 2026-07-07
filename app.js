@@ -1600,7 +1600,7 @@
         });
     }
   }
-});d
+});
 
   document.addEventListener("change", (event) => {
     const target = event.target;
