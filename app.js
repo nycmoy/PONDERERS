@@ -1586,7 +1586,8 @@
     if (action === "save-drawing") saveDrawing();
     if (action === "delete-drawing") deleteDrawing(actionButton.dataset.id);
     if (action === "sign-out") {
-      if (window.PonderersCloud) window.PonderersCloud.signOut();
+      if (window.PonderersCloud && confirm("Sign out of PONDERERS on this device?")) {
+    window.PonderersCloud.signOut();
     }
   });
 
