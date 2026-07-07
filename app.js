@@ -2286,7 +2286,7 @@
       setTimeout(startWhenReady, 50);
       return;
     }
-   window.PonderersCloud.onAuth((user, context, error) => {
+  window.PonderersCloud.onAuth((user, context, error) => {
   const authScreen = document.getElementById("auth-screen");
   const shell = document.querySelector(".app-shell");
   const errorEl = document.getElementById("auth-error");
