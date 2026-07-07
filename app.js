@@ -1587,11 +1587,15 @@
     if (action === "save-drawing") saveDrawing();
     if (action === "delete-drawing") deleteDrawing(actionButton.dataset.id);
     if (action === "sign-out") {
-      if (window.PonderersCloud && confirm("Sign out of PONDERERS on this device?")) {
-    window.PonderersCloud.signOut();
-    }
-    }
-  });
+    if (window.PonderersCloud && confirm("Sign out of PONDERERS on this device?")) {
+        window.PonderersCloud.signOut()
+      .then(() => toast("Signed out."))
+      .catch((error) => {
+        console.error("Sign-out failed", error);
+        toast("Could not sign out.");
+      });
+  }
+}
 
   document.addEventListener("change", (event) => {
     const target = event.target;
