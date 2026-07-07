@@ -1019,39 +1019,40 @@
     `;
   }
 
-  function renderMore() {
-    return `
-      <section class="screen">
-        <div class="screen-title">
-          <div>
-            <h2>More</h2>
-            <p>Planning spaces and private family records.</p>
-          </div>
+ function renderMore() {
+  return `
+    <section class="screen">
+      <div class="screen-title">
+        <div>
+          <h2>More</h2>
+          <p>Planning spaces and private family records.</p>
         </div>
+      </div>
 
-        <div class="tile-grid">
-          ${moreTile("wishes", "Wishlists", "Products, dates, gifts")}
-          ${moreTile("plans", "Plans", "Threads and tasks")}
-          ${moreTile("children", "Children", "Parents-only records")}
-          ${moreTile("faith", "Faith", "Verse and prayer")}
-          ${moreTile("draw", "Draw", "Finger notes")}
-          ${moreTile("calendar", "Apple Calendar", "Import and export")}
-        </div>
+      <div class="tile-grid">
+        ${moreTile("wishes", "Wishlists", "Products, dates, gifts")}
+        ${moreTile("plans", "Plans", "Threads and tasks")}
+        ${moreTile("children", "Children", "Parents-only records")}
+        ${moreTile("faith", "Faith", "Verse and prayer")}
+        ${moreTile("draw", "Draw", "Finger notes")}
+        ${moreTile("calendar", "Apple Calendar", "Import and export")}
+      </div>
 
-        <div class="panel">
-          <div class="section-head">
-            <h3>Family data</h3>
-          </div>
-          <div class="actions-row">
-            <button class="ghost-button" data-action="export-data" type="button">Export data</button>
-            <label class="ghost-button" for="data-import">Import data</label>
-            <input class="visually-hidden" id="data-import" type="file" accept="application/json,.json" data-action="import-data">
-            <button class="danger-button" data-action="reset-data" type="button">Reset sample data</button>
-            <button class="danger-button" data-action="sign-out" type="button">Sign out</button>          </div>
+      <div class="panel">
+        <div class="section-head">
+          <h3>Family data</h3>
         </div>
-      </section>
-    `;
-  }
+        <div class="actions-row">
+          <button class="ghost-button" data-action="export-data" type="button">Export data</button>
+          <label class="ghost-button" for="data-import">Import data</label>
+          <input class="visually-hidden" id="data-import" type="file" accept="application/json,.json" data-action="import-data">
+          <button class="danger-button" data-action="reset-data" type="button">Reset sample data</button>
+          <button class="ghost-button" data-action="sign-out" type="button">Sign out</button>
+        </div>
+      </div>
+    </section>
+  `;
+}
 
   function renderHomeScene() {
     return `
