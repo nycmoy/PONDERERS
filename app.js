@@ -1525,77 +1525,82 @@
   }
 
   document.addEventListener("click", (event) => {
-    const viewButton = event.target.closest("[data-view]");
-    if (viewButton) {
-      event.preventDefault();
-      setView(viewButton.dataset.view);
-      return;
-    }
-
-    const actionButton = event.target.closest("[data-action]");
-    if (!actionButton) return;
-
-    const action = actionButton.dataset.action;
-    if (action === "export-ics") exportICS();
-    if (action === "export-data") exportData();
-    if (action === "reset-data") resetData();
-    if (action === "refresh-prompts") {
-      ui.promptTurn = (ui.promptTurn + 1) % 7;
-      render();
-    }
-    if (action === "prompt-note" || action === "meal-idea-note") {
-      addNote(actionButton.dataset.text, "Prompt", "tomorrow");
-      toast("Saved as a note.");
-    }
-    if (action === "new-meal-idea") {
-      ui.mealIdea = mealIdea();
-      render();
-    }
-    if (action === "delete-event") removeById(state.events, actionButton.dataset.id, "Event deleted.");
-    if (action === "delete-meal") removeById(state.meals, actionButton.dataset.id, "Dinner removed.");
-    if (action === "toggle-note-seen") toggleItem(state.notes, actionButton.dataset.id, "seen");
-    if (action === "toggle-note-pin") toggleItem(state.notes, actionButton.dataset.id, "pinned");
-    if (action === "delete-note") removeById(state.notes, actionButton.dataset.id, "Note deleted.");
-    if (action === "delete-grocery") removeById(state.groceries, actionButton.dataset.id, "Grocery item deleted.");
-    if (action === "set-wish-filter") {
-      ui.wishFilter = actionButton.dataset.filter;
-      render();
-    }
-    if (action === "wish-status") setWishStatus(actionButton.dataset.id, actionButton.dataset.status);
-    if (action === "wish-thread") createThreadFromWish(actionButton.dataset.id);
-    if (action === "delete-wish") removeById(state.wishes, actionButton.dataset.id, "Wish deleted.");
-    if (action === "select-thread") {
-      ui.selectedThreadId = actionButton.dataset.id;
-      render();
-    }
-    if (action === "mark-decision") markMessageKind(actionButton.dataset.thread, actionButton.dataset.message, "decision");
-    if (action === "message-task") createTaskFromMessage(actionButton.dataset.thread, actionButton.dataset.message);
-    if (action === "ai-plan-note") addPlanNudge();
-    if (action === "delete-thread-task") deleteThreadTask(actionButton.dataset.thread, actionButton.dataset.id);
-    if (action === "select-child") {
-      ui.selectedChildId = actionButton.dataset.id;
-      render();
-    }
-    if (action === "delete-child-entry") deleteChildEntry(actionButton.dataset.child, actionButton.dataset.id);
-    if (action === "delete-prayer") removeById(state.prayers, actionButton.dataset.id, "Prayer removed.");
-    if (action === "set-draw-color") {
-      ui.drawColor = actionButton.dataset.color;
-      render();
-    }
-    if (action === "clear-drawing") clearDrawing();
-    if (action === "undo-drawing") undoDrawing();
-    if (action === "save-drawing") saveDrawing();
-    if (action === "delete-drawing") deleteDrawing(actionButton.dataset.id);
-    if (action === "sign-out") {
-    if (window.PonderersCloud && confirm("Sign out of PONDERERS on this device?")) {
-        window.PonderersCloud.signOut()
-      .then(() => toast("Signed out."))
-      .catch((error) => {
-        console.error("Sign-out failed", error);
-        toast("Could not sign out.");
-      });
+  const viewButton = event.target.closest("[data-view]");
+  if (viewButton) {
+    event.preventDefault();
+    setView(viewButton.dataset.view);
+    return;
   }
-}
+
+  const actionButton = event.target.closest("[data-action]");
+  if (!actionButton) return;
+
+  const action = actionButton.dataset.action;
+  if (action === "export-ics") exportICS();
+  if (action === "export-data") exportData();
+  if (action === "reset-data") resetData();
+  if (action === "refresh-prompts") {
+    ui.promptTurn = (ui.promptTurn + 1) % 7;
+    render();
+  }
+  if (action === "prompt-note" || action === "meal-idea-note") {
+    addNote(actionButton.dataset.text, "Prompt", "tomorrow");
+    toast("Saved as a note.");
+  }
+  if (action === "new-meal-idea") {
+    ui.mealIdea = mealIdea();
+    render();
+  }
+  if (action === "delete-event") removeById(state.events, actionButton.dataset.id, "Event deleted.");
+  if (action === "delete-meal") removeById(state.meals, actionButton.dataset.id, "Dinner removed.");
+  if (action === "toggle-note-seen") toggleItem(state.notes, actionButton.dataset.id, "seen");
+  if (action === "toggle-note-pin") toggleItem(state.notes, actionButton.dataset.id, "pinned");
+  if (action === "delete-note") removeById(state.notes, actionButton.dataset.id, "Note deleted.");
+  if (action === "delete-grocery") removeById(state.groceries, actionButton.dataset.id, "Grocery item deleted.");
+  if (action === "set-wish-filter") {
+    ui.wishFilter = actionButton.dataset.filter;
+    render();
+  }
+  if (action === "wish-status") setWishStatus(actionButton.dataset.id, actionButton.dataset.status);
+  if (action === "wish-thread") createThreadFromWish(actionButton.dataset.id);
+  if (action === "delete-wish") removeById(state.wishes, actionButton.dataset.id, "Wish deleted.");
+  if (action === "select-thread") {
+    ui.selectedThreadId = actionButton.dataset.id;
+    render();
+  }
+  if (action === "mark-decision") markMessageKind(actionButton.dataset.thread, actionButton.dataset.message, "decision");
+  if (action === "message-task") createTaskFromMessage(actionButton.dataset.thread, actionButton.dataset.message);
+  if (action === "ai-plan-note") addPlanNudge();
+  if (action === "delete-thread-task") deleteThreadTask(actionButton.dataset.thread, actionButton.dataset.id);
+  if (action === "select-child") {
+    ui.selectedChildId = actionButton.dataset.id;
+    render();
+  }
+  if (action === "delete-child-entry") deleteChildEntry(actionButton.dataset.child, actionButton.dataset.id);
+  if (action === "delete-prayer") removeById(state.prayers, actionButton.dataset.id, "Prayer removed.");
+  if (action === "set-draw-color") {
+    ui.drawColor = actionButton.dataset.color;
+    render();
+  }
+  if (action === "clear-drawing") clearDrawing();
+  if (action === "undo-drawing") undoDrawing();
+  if (action === "save-drawing") saveDrawing();
+  if (action === "delete-drawing") deleteDrawing(actionButton.dataset.id);
+
+  if (action === "sign-out") {
+    if (window.PonderersCloud && confirm("Sign out of PONDERERS on this device?")) {
+      window.PonderersCloud.signOut()
+        .then(() => {
+          disconnectCloud();
+          toast("Signed out.");
+        })
+        .catch((error) => {
+          console.error("Sign-out failed", error);
+          toast("Could not sign out.");
+        });
+    }
+  }
+});d
 
   document.addEventListener("change", (event) => {
     const target = event.target;
