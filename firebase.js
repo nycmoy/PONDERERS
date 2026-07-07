@@ -10,6 +10,7 @@ import {
   persistentLocalCache,
   persistentSingleTabManager,
   doc,
+  getDoc,
   setDoc,
   onSnapshot,
   collection,
@@ -46,15 +47,96 @@ const db = initializeFirestore(app, {
   localCache: persistentLocalCache({ tabManager: persistentSingleTabManager() })
 });
 
-// One shared document for the whole household, since this app is built for exactly
-// two parent accounts sharing one family's data, not a multi-tenant system.
-const HOUSEHOLD_ID = "ponderers-home";
-const householdRef = doc(db, "households", HOUSEHOLD_ID);
-const drawingsRef = collection(db, "households", HOUSEHOLD_ID, "drawings");
+let activeContextPromise = null;
+
+function userRef(uid) {
+  return doc(db, "users", uid);
+}
+
+function householdRef(householdId) {
+  return doc(db, "households", householdId);
+}
+
+function memberRef(householdId, uid) {
+  return doc(db, "households", householdId, "members", uid);
+}
+
+function drawingsRef(householdId) {
+  return collection(db, "households", householdId, "drawings");
+}
+
+async function resolveActiveContext(forceRefresh = false) {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("Not signed in.");
+  }
+
+  if (!forceRefresh && activeContextPromise) {
+    return activeContextPromise;
+  }
+
+  activeContextPromise = (async () => {
+    const userSnap = await getDoc(userRef(user.uid));
+    if (!userSnap.exists()) {
+      throw new Error("Your user profile was not found.");
+    }
+
+    const userData = userSnap.data();
+    const householdId = userData.defaultHouseholdId;
+    if (!householdId) {
+      throw new Error("No default household is set for this user.");
+    }
+
+    const memberSnap = await getDoc(memberRef(householdId, user.uid));
+    if (!memberSnap.exists()) {
+      throw new Error("You are not a member of this household.");
+    }
+
+    const memberData = memberSnap.data();
+    if (memberData.status !== "active") {
+      throw new Error("Your household membership is not active.");
+    }
+
+    return {
+      uid: user.uid,
+      email: user.email || "",
+      householdId,
+      role: memberData.role || "",
+      memberStatus: memberData.status || "",
+      displayName: memberData.displayName || userData.displayName || user.email || "Parent"
+    };
+  })();
+
+  try {
+    return await activeContextPromise;
+  } catch (error) {
+    activeContextPromise = null;
+    throw error;
+  }
+}
+
+function clearActiveContext() {
+  activeContextPromise = null;
+}
 
 window.PonderersCloud = {
   onAuth(callback) {
-    return onAuthStateChanged(auth, callback);
+    return onAuthStateChanged(auth, async (user) => {
+      clearActiveContext();
+
+      if (!user) {
+        callback(null);
+        return;
+      }
+
+      try {
+        const context = await resolveActiveContext(true);
+        callback(user, context);
+      } catch (error) {
+        console.warn("PONDERERS: could not resolve household context", error);
+        callback(user, null, error);
+      }
+    });
   },
 
   signIn(email, password) {
@@ -62,38 +144,56 @@ window.PonderersCloud = {
   },
 
   signOut() {
+    clearActiveContext();
     return firebaseSignOut(auth);
   },
 
-  // callback receives the household data, or null if the document does not exist yet
-  // (the very first time anyone signs in before any data has been pushed to the cloud).
-  watchHousehold(callback) {
+  async getSessionContext() {
+    return resolveActiveContext();
+  },
+
+  async watchHousehold(callback) {
+    const context = await resolveActiveContext();
     return onSnapshot(
-      householdRef,
-      (snapshot) => callback(snapshot.exists() ? snapshot.data() : null),
+      householdRef(context.householdId),
+      (snapshot) => callback(snapshot.exists() ? snapshot.data() : null, context),
       (error) => console.warn("PONDERERS: household sync error", error)
     );
   },
 
-  saveHousehold(data) {
-    return setDoc(householdRef, data);
+  async saveHousehold(data) {
+    const context = await resolveActiveContext();
+    return setDoc(householdRef(context.householdId), data, { merge: true });
   },
 
-  // Most recent 30 drawings only, newest first, to keep this from growing without bound.
-  watchDrawings(callback) {
-    const recent = query(drawingsRef, orderBy("createdAt", "desc"), limit(30));
+  async watchDrawings(callback) {
+    const context = await resolveActiveContext();
+    const recent = query(
+      drawingsRef(context.householdId),
+      orderBy("createdAt", "desc"),
+      limit(30)
+    );
     return onSnapshot(
       recent,
-      (snapshot) => callback(snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))),
+      (snapshot) =>
+        callback(
+          snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })),
+          context
+        ),
       (error) => console.warn("PONDERERS: drawings sync error", error)
     );
   },
 
-  addDrawing(image) {
-    return addDoc(drawingsRef, { image, createdAt: serverTimestamp() });
+  async addDrawing(image) {
+    const context = await resolveActiveContext();
+    return addDoc(drawingsRef(context.householdId), {
+      image,
+      createdAt: serverTimestamp()
+    });
   },
 
-  deleteDrawing(id) {
-    return deleteDoc(doc(drawingsRef, id));
+  async deleteDrawing(id) {
+    const context = await resolveActiveContext();
+    return deleteDoc(doc(drawingsRef(context.householdId), id));
   }
 };
