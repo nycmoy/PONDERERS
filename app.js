@@ -1047,7 +1047,7 @@
             <label class="ghost-button" for="data-import">Import data</label>
             <input class="visually-hidden" id="data-import" type="file" accept="application/json,.json" data-action="import-data">
             <button class="danger-button" data-action="reset-data" type="button">Reset sample data</button>
-          </div>
+            <button class="danger-button" data-action="sign-out" type="button">Sign out</button>          </div>
         </div>
       </section>
     `;
