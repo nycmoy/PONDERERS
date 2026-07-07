@@ -1590,6 +1590,7 @@
       if (window.PonderersCloud && confirm("Sign out of PONDERERS on this device?")) {
     window.PonderersCloud.signOut();
     }
+    }
   });
 
   document.addEventListener("change", (event) => {
