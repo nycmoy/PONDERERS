@@ -2286,21 +2286,22 @@
       setTimeout(startWhenReady, 50);
       return;
     }
-    window.PonderersCloud.onAuth((user) => {
-      const authScreen = document.getElementById("auth-screen");
-      const shell = document.querySelector(".app-shell");
-      if (user) {
-        if (authScreen) authScreen.hidden = true;
-        if (shell) shell.hidden = false;
-        connectCloud();
-        render();
-      } else {
-        disconnectCloud();
-        if (authScreen) authScreen.hidden = false;
-        if (shell) shell.hidden = true;
-      }
-    });
-  }
+   window.PonderersCloud.onAuth((user, context, error) => {
+  const authScreen = document.getElementById("auth-screen");
+  const shell = document.querySelector(".app-shell");
+  const errorEl = document.getElementById("auth-error");
 
-  startWhenReady();
-})();
+  if (errorEl) errorEl.textContent = "";
+
+  if (user && context && !error) {
+    if (authScreen) authScreen.hidden = true;
+    if (shell) shell.hidden = false;
+    connectCloud();
+    render();
+  } else {
+    disconnectCloud();
+    if (authScreen) authScreen.hidden = false;
+    if (shell) shell.hidden = true;
+    if (errorEl && error) errorEl.textContent = error.message || "Could not load your household.";
+  }
+});
